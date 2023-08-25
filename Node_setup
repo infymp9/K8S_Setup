@@ -1,0 +1,27 @@
+K8S Node Setup
+yum update -y
+yum install docker -y
+setenforce 0
+swapoff -a
+systemctl enable docker --now
+systemctl status docker
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=0
+repo_gpgcheck=0
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+kubeadm config images pull
+vim /etc/docker/daemon.json
+{
+        "exec-opts":["native.cgroupdriver=systemd"]
+}
+systemctl daemon-reload
+systemctl restart docker
+systemctl status docker
+yum install iproute-tc -y
+kubeadm join 172.31.30.105:6443 --token inihzw.u3ktqxx5zoxrsx3o --discovery-token-ca-cert-hash sha256:d5b733e0c63df995ec5ee87511f92321c68a87e3272ebfb20e4d7a5ec5f34b0d
