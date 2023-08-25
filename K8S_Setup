@@ -1,0 +1,42 @@
+K8S Master Setup
+yum update -y
+setenforce 0
+swapoff -a
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=0
+repo_gpgcheck=0
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+
+yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+kubectl get pods
+kubectl get nodes
+yum install docker -y
+systemctl enable docker --now
+systemctl status docker
+kubeadm config images pull
+kubectl get nodes
+vim /etc/docker/daemon.json
+{
+        "exec-opts":["native.cgroupdriver=systemd"]
+}
+systemctl daemon-reload
+systemctl restart docker
+yum install iproute-tc -y
+kubectl get nodes
+sudo kubeadm init --pod-network-cidr 192.168.0.0/16 --kubernetes-version 1.24.0
+sudo kubeadm init --pod-network-cidr 192.168.0.0/16 --kubernetes-version 1.24.0
+sudo kubeadm init --pod-network-cidr 192.168.0.0/16 --kubernetes-version 1.27.0
+sudo kubeadm init --pod-network-cidr 192.168.0.0/16 --kubernetes-version 1.28.1
+kubectl get nodes
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+kubectl get nodes
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
+kubeadm token create --print-join-command
+kubectl get nodes
